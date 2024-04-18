@@ -1,16 +1,16 @@
 import { zip } from "compressing";
 import express from "express";
 import * as fs from "node:fs";
-import { logger } from "../utils/logger";
-import { getFormattedDate } from "../utils/date";
 import path from "node:path";
+import { getFormattedDate } from "../utils/date";
+import { logger } from "../utils/logger";
 
 const router = express.Router();
 
 router.post("/gen", async (req, res) => {
     const str = `echo "hello world"`;
     const dirName = getFormattedDate();
-    const dirPath = path.join(process.cwd(), "scripts", dirName);
+    const dirPath = path.join(process.cwd(), process.env.SCRIPT_DIR!, dirName);
     const FILENAME = "test";
 
     try {
@@ -21,6 +21,7 @@ router.post("/gen", async (req, res) => {
 
     try {
         fs.writeFileSync(path.join(dirPath, `${FILENAME}.sh`), str);
+        fs.chmodSync(path.join(dirPath, `${FILENAME}.sh`), "755");
     } catch (e) {
         logger.error(e);
         res.send("error");
@@ -38,7 +39,7 @@ router.post("/gen", async (req, res) => {
     }
 
     res.sendFile(
-        path.join("scripts", dirName, `${FILENAME}.zip`),
+        path.join(process.env.SCRIPT_DIR!, dirName, `${FILENAME}.zip`),
         { root: "." },
         (err) => {
             if (err) {

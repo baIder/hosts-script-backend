@@ -5,7 +5,7 @@ log4js.configure({
         console: { type: "console", layout: { type: "colored" } },
         dateFile: {
             type: "dateFile",
-            filename: "logs/server.log",
+            filename: `${process.env.LOG_DIR}/server.log`,
             pattern: "yyyy-MM-dd",
             alwaysIncludePattern: true,
             keepFileExt: true,

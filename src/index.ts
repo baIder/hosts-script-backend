@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import hosts from "./hosts/hosts";
 import { LoggerMiddleware } from "./middleware/logger.middleware";
