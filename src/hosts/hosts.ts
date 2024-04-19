@@ -4,11 +4,17 @@ import * as fs from "node:fs";
 import path from "node:path";
 import { getFormattedDate } from "../utils/date";
 import { logger } from "../utils/logger";
+import { genScripts } from "../utils/generate";
 
 const router = express.Router();
 
 router.post("/gen", async (req, res) => {
-    const str = `echo "hello world"`;
+    let scripts = "\n";
+    for (const key in req.body) {
+        scripts += key + " " + req.body[key] + "\n";
+    }
+    const str = genScripts(scripts);
+
     const dirName = getFormattedDate();
     const dirPath = path.join(process.cwd(), process.env.SCRIPT_DIR!, dirName);
     const FILENAME = "test";
