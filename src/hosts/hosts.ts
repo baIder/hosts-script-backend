@@ -1,5 +1,5 @@
-import { zip } from "compressing";
 import express from "express";
+import archiver from "archiver";
 import * as fs from "node:fs";
 import path from "node:path";
 import { getFormattedDate } from "../utils/date";
@@ -33,27 +33,54 @@ router.post("/gen", async (req, res) => {
         res.send("error");
     }
 
-    try {
-        await zip.compressFile(
-            path.join(dirPath, `${FILENAME}.sh`),
-            path.join(dirPath, `${FILENAME}.zip`)
-        );
-        logger.info(`${FILENAME}.zip created`);
-    } catch (e) {
-        logger.error(e);
-        res.send("error");
-    }
+    const archive = archiver("zip");
 
-    res.sendFile(
-        path.join(process.env.SCRIPT_DIR!, dirName, `${FILENAME}.zip`),
-        { root: "." },
-        (err) => {
-            if (err) {
-                logger.error(err);
-                res.send("fail");
-            }
+    archive.on("warning", function (err) {
+        if (err.code === "ENOENT") {
+            logger.warn(err);
+            res.send(err);
+        } else {
+            logger.error(err);
+            res.send(err);
+        }
+    });
+
+    archive.on("error", function (err) {
+        logger.error(err);
+        res.send(err);
+    });
+
+    archive.append(fs.createReadStream(path.join(dirPath, `${FILENAME}.sh`)), {
+        name: `update-hosts.sh`,
+    });
+
+    archive.append(
+        fs.createReadStream(
+            path.join(process.cwd(), process.env.SCRIPT_DIR!, "recover.sh")
+        ),
+        {
+            name: "recover-hosts.sh",
         }
     );
+
+    archive.finalize();
+
+    const output = fs.createWriteStream(path.join(dirPath, `${FILENAME}.zip`));
+
+    archive.pipe(output);
+
+    output.on("close", function () {
+        res.sendFile(
+            path.join(process.env.SCRIPT_DIR!, dirName, `${FILENAME}.zip`),
+            { root: "." },
+            (err) => {
+                if (err) {
+                    logger.error(err);
+                    res.send("fail");
+                }
+            }
+        );
+    });
 });
 
 export default router;
