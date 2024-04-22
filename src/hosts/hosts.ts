@@ -1,10 +1,11 @@
 import express from "express";
 import * as fs from "node:fs";
 import path from "node:path";
+import sevenBin from "7zip-bin";
+import Seven from "node-7z";
 import { getFormattedDate, getFormattedTime } from "../utils/date";
 import { logger } from "../utils/logger";
 import { genScripts } from "../utils/generate";
-import { zip } from "compressing";
 
 const router = express.Router();
 
@@ -32,11 +33,39 @@ router.post("/gen", async (req, res) => {
         logger.error(e);
         res.send("error");
     }
-    zip.compressFile(
-        path.join(dirPath, `${FILENAME}`),
-        path.join(dirPath, `${FILENAME}.zip`)
-    ).then(() => {
-        res.sendFile(path.join(dirPath, `${FILENAME}.zip`));
+
+    const pathTo7zip = sevenBin.path7za;
+
+    try {
+        fs.chmodSync(pathTo7zip, "755");
+    } catch (e) {
+        logger.error(e);
+        res.send("error");
+    }
+
+    const zipStream = Seven.add(
+        path.join(dirPath, `${FILENAME}.zip`),
+        [
+            path.join(dirPath, `${FILENAME}`),
+            path.join(process.cwd(), process.env.SCRIPT_DIR!, "recover.sh"),
+        ],
+        {
+            $bin: pathTo7zip,
+        }
+    );
+
+    zipStream.on("error", (err) => {
+        logger.error(err);
+        res.send("error:" + err);
+    });
+
+    zipStream.on("end", () => {
+        res.sendFile(path.join(dirPath, `${FILENAME}.zip`), (err) => {
+            if (err) {
+                logger.error(err);
+                res.send("error");
+            }
+        });
     });
 });
 
