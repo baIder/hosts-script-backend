@@ -2,7 +2,7 @@ import express from "express";
 import archiver from "archiver";
 import * as fs from "node:fs";
 import path from "node:path";
-import { getFormattedDate } from "../utils/date";
+import { getFormattedDate, getFormattedTime } from "../utils/date";
 import { logger } from "../utils/logger";
 import { genScripts } from "../utils/generate";
 
@@ -17,7 +17,7 @@ router.post("/gen", async (req, res) => {
 
     const dirName = getFormattedDate();
     const dirPath = path.join(process.cwd(), process.env.SCRIPT_DIR!, dirName);
-    const FILENAME = "test";
+    const FILENAME = getFormattedTime();
 
     try {
         fs.accessSync(dirPath, fs.constants.F_OK);
