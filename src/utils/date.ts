@@ -20,5 +20,5 @@ export const getFormattedTime = () => {
     const minute = now.getMinutes().toString().padStart(2, "0");
     const second = now.getSeconds().toString().padStart(2, "0");
     // 将格式化后的日期时间拼接成字符串
-    return `${year}-${month}-${day}-${hour}:${minute}:${second}`;
+    return `${year}-${month}-${day}-${hour}-${minute}-${second}`;
 };

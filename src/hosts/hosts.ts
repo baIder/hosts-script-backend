@@ -1,10 +1,10 @@
 import express from "express";
-import archiver from "archiver";
 import * as fs from "node:fs";
 import path from "node:path";
 import { getFormattedDate, getFormattedTime } from "../utils/date";
 import { logger } from "../utils/logger";
 import { genScripts } from "../utils/generate";
+import { zip } from "compressing";
 
 const router = express.Router();
 
@@ -26,60 +26,17 @@ router.post("/gen", async (req, res) => {
     }
 
     try {
-        fs.writeFileSync(path.join(dirPath, `${FILENAME}.sh`), str);
-        fs.chmodSync(path.join(dirPath, `${FILENAME}.sh`), "755");
+        fs.writeFileSync(path.join(dirPath, `${FILENAME}`), str);
+        fs.chmodSync(path.join(dirPath, `${FILENAME}`), "755");
     } catch (e) {
         logger.error(e);
         res.send("error");
     }
-
-    const archive = archiver("zip");
-
-    archive.on("warning", function (err) {
-        if (err.code === "ENOENT") {
-            logger.warn(err);
-            res.send(err);
-        } else {
-            logger.error(err);
-            res.send(err);
-        }
-    });
-
-    archive.on("error", function (err) {
-        logger.error(err);
-        res.send(err);
-    });
-
-    archive.append(fs.createReadStream(path.join(dirPath, `${FILENAME}.sh`)), {
-        name: `update-hosts.sh`,
-    });
-
-    archive.append(
-        fs.createReadStream(
-            path.join(process.cwd(), process.env.SCRIPT_DIR!, "recover.sh")
-        ),
-        {
-            name: "recover-hosts.sh",
-        }
-    );
-
-    archive.finalize();
-
-    const output = fs.createWriteStream(path.join(dirPath, `${FILENAME}.zip`));
-
-    archive.pipe(output);
-
-    output.on("close", function () {
-        res.sendFile(
-            path.join(process.env.SCRIPT_DIR!, dirName, `${FILENAME}.zip`),
-            { root: "." },
-            (err) => {
-                if (err) {
-                    logger.error(err);
-                    res.send("fail");
-                }
-            }
-        );
+    zip.compressFile(
+        path.join(dirPath, `${FILENAME}`),
+        path.join(dirPath, `${FILENAME}.zip`)
+    ).then(() => {
+        res.sendFile(path.join(dirPath, `${FILENAME}.zip`));
     });
 });
 
