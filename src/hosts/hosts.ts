@@ -11,8 +11,10 @@ const router = express.Router();
 
 router.post("/gen", async (req, res) => {
     let scripts = "\n";
-    for (const key in req.body) {
-        scripts += key + " " + req.body[key] + "\n";
+    const { data }: { data: { uuid: string; ip: string; domain: string }[] } =
+        req.body;
+    for (const item of data) {
+        scripts += item.ip + " " + item.domain + "\n";
     }
     const str = genScripts(scripts);
 
