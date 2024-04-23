@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "fs";
+import { chmod, chmodSync, mkdirSync, writeFileSync } from "fs";
 
 export const genScripts = (str: string) => {
     return `#!/bin/bash
@@ -8,7 +8,7 @@ echo "${str}" >> /etc/hosts
 echo "修改成功！"`;
 };
 
-export const genRecoverScript = () => {
+export const genRecoverScript = async () => {
     mkdirSync(process.env.SCRIPT_DIR!, { recursive: true });
     writeFileSync(
         process.env.SCRIPT_DIR! + "/recover.sh",
@@ -23,4 +23,5 @@ else
     echo "未发现备份文件，无法恢复"
 fi`
     );
+    chmodSync(process.env.SCRIPT_DIR! + "/recover.sh", "755");
 };
