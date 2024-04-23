@@ -4,6 +4,7 @@ import path from "node:path";
 import { getFormattedDate, getFormattedTime } from "../utils/date";
 import { logger } from "../utils/logger";
 import { genScripts } from "../utils/generate";
+import { zip } from "compressing";
 
 const router = express.Router();
 
@@ -34,7 +35,18 @@ router.post("/gen", async (req, res) => {
         res.send("error");
     }
 
-    res.send("ok");
+    zip.compressFile(
+        path.join(dirPath, `${FILENAME}.sh`),
+        path.join(dirPath, `${FILENAME}.zip`)
+    ).then(() => {
+        res.sendFile(path.join(dirPath, `${FILENAME}.zip`), (err) => {
+            if (err) {
+                logger.error(err);
+                res.send("error");
+            }
+        });
+        fs.unlinkSync(path.join(dirPath, `${FILENAME}.sh`));
+    });
 });
 
 export default router;
