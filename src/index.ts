@@ -11,6 +11,6 @@ app.use(CorsMiddleware);
 app.use(LoggerMiddleware);
 app.use("/hosts", hosts);
 
-app.listen(3000, () => {
+app.listen(17777, () => {
     console.log("Server is running on port 3000");
 });
