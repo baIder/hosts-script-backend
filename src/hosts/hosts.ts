@@ -3,23 +3,22 @@ import * as fs from "node:fs";
 import path from "node:path";
 import { getFormattedDate, getFormattedTime } from "../utils/date";
 import { logger } from "../utils/logger";
-import { genScripts } from "../utils/generate";
+import { genBatScript, genScripts } from "../utils/generate";
 import { zip } from "compressing";
 
 const router = express.Router();
 
 router.post("/gen", async (req, res) => {
     let scripts = "\n";
-    const { data }: { data: { uuid: string; ip: string; domain: string }[] } =
-        req.body;
+    const { data, type }: { type: "bat" | "shell"; data: Hosts[] } = req.body;
     for (const item of data) {
         scripts += item.ip + " " + item.domain + "\n";
     }
-    const str = genScripts(scripts);
+    const str = type === "shell" ? genScripts(scripts) : genBatScript(data);
 
     const dirName = getFormattedDate();
     const dirPath = path.join(process.cwd(), process.env.SCRIPT_DIR!, dirName);
-    const FILENAME = getFormattedTime();
+    const FILENAME = getFormattedTime() + (type === "shell" ? ".sh" : ".bat");
 
     try {
         fs.accessSync(dirPath, fs.constants.F_OK);
@@ -28,15 +27,15 @@ router.post("/gen", async (req, res) => {
     }
 
     try {
-        fs.writeFileSync(path.join(dirPath, `${FILENAME}.sh`), str);
-        fs.chmodSync(path.join(dirPath, `${FILENAME}.sh`), "755");
+        fs.writeFileSync(path.join(dirPath, FILENAME), str);
+        fs.chmodSync(path.join(dirPath, FILENAME), "755");
     } catch (e) {
         logger.error(e);
         res.send("error");
     }
 
     zip.compressFile(
-        path.join(dirPath, `${FILENAME}.sh`),
+        path.join(dirPath, FILENAME),
         path.join(dirPath, `${FILENAME}.zip`)
     ).then(() => {
         res.sendFile(path.join(dirPath, `${FILENAME}.zip`), (err) => {
@@ -45,7 +44,7 @@ router.post("/gen", async (req, res) => {
                 res.send("error");
             }
         });
-        fs.unlinkSync(path.join(dirPath, `${FILENAME}.sh`));
+        fs.unlinkSync(path.join(dirPath, FILENAME));
     });
 });
 
