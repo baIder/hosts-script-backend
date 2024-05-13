@@ -7,7 +7,11 @@ export const throttleMiddleware = async (
     res: Response,
     next: NextFunction
 ) => {
-    const ip = (req.headers["X-Real-IP"] as string) || req.ip || "unknown ip";
+    const ip =
+        (req.headers["X-Real-IP"] as string) ||
+        (req.headers["x-real-ip"] as string) ||
+        req.ip ||
+        "unknown ip";
     try {
         const body = await redis.get(ip);
         if (body) {

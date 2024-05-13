@@ -6,7 +6,11 @@ export const LoggerMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    const ip = (req.headers["X-Real-IP"] as string) || req.ip || "unknown ip";
+    const ip =
+        (req.headers["X-Real-IP"] as string) ||
+        (req.headers["x-real-ip"] as string) ||
+        req.ip ||
+        "unknown ip";
     logger.info(`${req.method} ${req.path} ${ip} ${JSON.stringify(req.body)}`);
 
     next();
