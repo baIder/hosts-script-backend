@@ -5,13 +5,14 @@
     "type": "module",
     "main": "src/index.ts",
     "scripts": {
+        "dev": "dotenvx run -f .env.local -f .env -- tsx watch src/index.ts",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@dotenvx/dotenvx": "^0.38.0",
         "compressing": "^1.10.0",
-        "dotenv": "^16.4.5",
         "express": "^4.19.2",
         "ioredis": "^5.4.1",
         "log4js": "^6.9.1"
