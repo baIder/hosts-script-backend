@@ -16,7 +16,9 @@ export const throttleMiddleware = async (
         const body = await redis.get(ip);
         if (body) {
             logger.warn(`请求提交过多，ip: ${ip}`);
-            return res.status(429).send("请求提交过多，请30秒后再试");
+            return res
+                .status(429)
+                .send({ message: "请求提交过多，请30秒后再试" });
         }
     } catch (error) {
         logger.error(error);

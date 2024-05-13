@@ -31,7 +31,7 @@ router.post("/gen", async (req, res) => {
         fs.chmodSync(path.join(dirPath, FILENAME), "755");
     } catch (e) {
         logger.error(e);
-        res.send("error");
+        res.status(500).send({ message: "服务器错误" });
     }
 
     zip.compressFile(
@@ -41,7 +41,7 @@ router.post("/gen", async (req, res) => {
         res.sendFile(path.join(dirPath, `${FILENAME}.zip`), (err) => {
             if (err) {
                 logger.error(err);
-                res.send("error");
+                res.status(500).send({ message: "服务器错误" });
             }
         });
         fs.unlinkSync(path.join(dirPath, FILENAME));
