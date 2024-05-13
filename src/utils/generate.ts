@@ -1,5 +1,5 @@
 export const genScripts = (str: string) => {
-    const string1 = `
+    const string = `
 #!/bin/bash
 
 echo "请输入管理员密码以继续："
@@ -31,7 +31,7 @@ echo "${str}" | sudo tee -a /etc/hosts
 echo "hosts文件已修改。"
 read -rsp $'请按任意键继续...\\n' -n1 key
 `;
-    return string1;
+    return string;
 };
 
 export const genBatScript = (arr: Hosts[]) => {
