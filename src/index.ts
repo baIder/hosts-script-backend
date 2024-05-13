@@ -11,7 +11,12 @@ app.use(express.json());
 app.use(CorsMiddleware);
 app.use(LoggerMiddleware);
 app.use(throttleMiddleware);
+
 app.use("/hosts", hosts);
+
+app.get("/ping", (req, res) => {
+    res.send("pong");
+});
 
 app.listen(PORT, () => {
     console.log("Server is running on port " + PORT);
