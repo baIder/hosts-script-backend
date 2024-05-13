@@ -6,9 +6,8 @@ export const LoggerMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    logger.info(
-        `${req.method} ${req.path} ${req.ip} ${JSON.stringify(req.body)}`
-    );
+    const ip = (req.headers["X-Real-IP"] as string) || req.ip || "unknown ip";
+    logger.info(`${req.method} ${req.path} ${ip} ${JSON.stringify(req.body)}`);
 
     next();
 };
